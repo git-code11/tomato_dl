@@ -3,7 +3,19 @@ from keras import optimizers, losses, Input
 from ..models.vision_transformer import VisionTransformer
 
 
-def load_vit(config: dict[str, tp.Any], weights: tp.Optional[str] = None, skip_init: bool = False) -> VisionTransformer:
+class VitConfig(tp.TypedDict):
+    learning_rate: float
+    image_size: tuple[int, int]
+    patch_size: tuple[int, int]
+    embed_size: int
+    num_heads: int
+    mlp_dim: int
+    num_layers: int
+    num_classes: int
+    dropout: int
+
+
+def load_vit(config: VitConfig, weights: tp.Optional[str] = None, skip_init: bool = False) -> VisionTransformer:
     lr = config['learning_rate']
     image_size = config['image_size']
 
