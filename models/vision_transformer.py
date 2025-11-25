@@ -47,7 +47,7 @@ class VisionTransformer(Model):
 
     def compute_output_shape(self, input_shape: tuple[int, ...]) -> tuple[int, int]:
         batch_size = input_shape[0]
-        return (batch_size, self.model_config.num_classes)
+        return (batch_size, self.model_config['num_classes'])
 
     def get_config(self):
         config = super().get_config()
