@@ -2,22 +2,21 @@ import typing as tp
 from keras import optimizers, losses, Input
 from ..models.vision_transformer import VisionTransformer
 
-
 class VitConfig(tp.TypedDict):
     learning_rate: float
+    weight_decay: float
     image_size: tuple[int, int]
     patch_size: tuple[int, int]
-    embed_size: int
+    embed_dim: int
     num_heads: int
     mlp_dim: int
     num_layers: int
     num_classes: int
-    dropout: int
+    dropout_rate: int
 
 
 def load_vit(config: VitConfig, weights: tp.Optional[str] = None, skip_init: bool = False) -> VisionTransformer:
-    lr = config['learning_rate']
-    image_size = config['image_size']
+    lr, weight_decay, image_size = config['learning_rate'], config['weight_decay'], config['image_size']
 
     vit_model = VisionTransformer(
         vte_config=dict(
@@ -33,13 +32,15 @@ def load_vit(config: VitConfig, weights: tp.Optional[str] = None, skip_init: boo
 
     # Compile the model
     vit_model.compile(
-        optimizer=optimizers.Adam(learning_rate=lr),
+        optimizer=optimizers.AdamW(learning_rate=lr, weight_decay=weight_decay),
         loss=losses.SparseCategoricalCrossentropy(from_logits=False),
         # since softmax is already added
         metrics=['accuracy']
     )
 
-    _ = vit_model(Input(shape=(*image_size, 3)))
-    if weights:
-        vit_model.load_weights(weights)
+    if not skip_init:
+      _ = vit_model(Input(shape=(*image_size, 3)))
+      if weights:
+          vit_model.load_weights(weights)
+
     return vit_model
