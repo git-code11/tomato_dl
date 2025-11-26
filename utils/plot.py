@@ -14,10 +14,12 @@ class GraphHistory(tp.TypedDict):
     val_loss: Array
 
 
-def plot_graph(fig: plt.Figure,
-               history: GraphHistory) -> tuple[plt.Axes, plt.Axes]:
+def plot_graph(
+    history: GraphHistory, fig: tp.Optional[plt.Figure] = None,
+) -> tuple[plt.Figure, plt.Axes, plt.Axes]:
     # Create figure
-    fig = plt.figure(figsize=(18, 6))
+    if fig is None:
+        fig = plt.figure(figsize=(18, 6))
     fig.suptitle("Training & Validation Metrics Visualization",
                  fontweight="bold", fontsize="x-large")
     # Plot both loss and accuracy
@@ -38,4 +40,4 @@ def plot_graph(fig: plt.Figure,
     ax2.set_xlabel('Epoch')
     ax2.legend(['Train', 'Validation'], loc='upper left')
 
-    return (ax1, ax2)
+    return (fig, ax1, ax2)
