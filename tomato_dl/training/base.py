@@ -7,8 +7,8 @@ import pathlib
 import keras
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from utils import plot
-from utils.metrics import MetricsHelper, MetricsGroup
+from ..utils import plot
+from ..utils.metrics import MetricsHelper, MetricsGroup
 
 
 type OptionalDataset = tp.Optional[tf.data.Dataset]
@@ -40,13 +40,13 @@ class BaseTrainer(ABC):
     def load_datasets(self) -> DatasetDict:
         ...
 
-    @abstractmethod
     @property
+    @abstractmethod
     def callbacks(self) -> list[keras.callbacks.Callback]:
         ...
 
-    @abstractmethod
     @property
+    @abstractmethod
     def display_labels(self) -> tp.Optional[list[str]]:
         return None
 
