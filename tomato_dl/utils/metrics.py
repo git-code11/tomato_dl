@@ -57,7 +57,7 @@ class MetricsHelper:
         class_size = np.shape(scores)[-1]
 
         assert (np.shape(preds) == np.shape(targets), "Shape is different")
-        print("Shape=>", np.shape(preds), np.shape(targets))
+
         accuracy = accuracy_score(targets, preds)
         recall = recall_score(targets, preds, average='macro')
         precision = precision_score(targets, preds, average='macro')

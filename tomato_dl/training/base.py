@@ -1,5 +1,6 @@
 # A training abstract class
 import typing as tp
+import enum
 from abc import ABC, abstractmethod
 from functools import reduce
 import operator
@@ -20,6 +21,11 @@ class DatasetDict(tp.TypedDict):
     valid_ds: OptionalDataset
     test_ds: OptionalDataset
 
+
+class DataSplit(enum.Enum):
+  TRAIN = "TRAIN"
+  VALID = "VALID"
+  TEST = "TEST"
 
 class BaseTrainer(ABC):
     model_train_history: list[keras.callbacks.History]
@@ -67,12 +73,12 @@ class BaseTrainer(ABC):
         self.model_train_history.append(history)
         return history
 
-    def inference(self, ds: OptionalDataset = None, *, kind='test_ds') -> MetricsGroup:
+    def inference(self, ds: OptionalDataset = None, *, kind: DataSplit=DataSplit.TEST) -> MetricsGroup:
         if ds is None:
-            ds = self.ds.get(kind).take(1)
+            ds = self.ds.get(f"{kind.value.lower()}_ds").take(1)
         ds = ds.map(lambda x, y: (self.preprocess(x), y))
         metrics = MetricsHelper.get_metrics(
-            ds, model=self.model, display_labels=self.display_labels)
+            ds, model=self.model, display_labels=self.display_labels, title=kind.value.upper())
         return metrics
 
     def _history_metrics(self, key: str, *idxs: list[int, ...]) -> list[float]:

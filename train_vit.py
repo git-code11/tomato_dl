@@ -9,7 +9,7 @@ import jaxtyping as ttf
 import tensorflow as tf
 import keras
 from tomato_dl.utils.load_model_helper import VitConfig, load_vit
-from tomato_dl.training.base import BaseTrainer, DatasetDict
+from tomato_dl.training.base import BaseTrainer, DatasetDict, DataSplit
 
 BASE_DIR = pathlib.Path.cwd()
 
@@ -113,9 +113,17 @@ if __name__ == "__main__":
     # vit_trainer.plot_history(
     #     0, file_path=BASE_CHECKPOINT_DIR / f"vit_train_history-{timestamp}.jpg"
     # )
-    metrics = vit_trainer.inference()
+    all_metrics = dict()
+    metrics = vit_trainer.inference(kind=DataSplit.TEST)
+    metrics.save_fig(BASE_CHECKPOINT_DIR /
+                     f"vit_test_confusion_matrix-{timestamp}.jpg")
+    all_metrics['test'] = metrics.to_series()
+              
+    metrics = vit_trainer.inference(kind=DataSplit.TRAIN)
     metrics.save_fig(BASE_CHECKPOINT_DIR /
                      f"vit_train_confusion_matrix-{timestamp}.jpg")
-    data = metrics.to_series()
-    data.to_csv(BASE_CHECKPOINT_DIR /
-              f"vit_metrics-{timestamp}.jpg")
+    all_metrics['train'] = metrics.to_series()
+
+    df = pd.DataFrame(all_metrics)
+    df.to_csv(BASE_CHECKPOINT_DIR /
+              f"vit_metrics-{timestamp}.csv")
