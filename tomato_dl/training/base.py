@@ -69,7 +69,7 @@ class BaseTrainer(ABC):
 
     def inference(self, ds: OptionalDataset = None, *, kind='test_ds') -> MetricsGroup:
         if ds is None:
-            ds = self.ds.get(kind)
+            ds = self.ds.get(kind).take(1)
         ds = ds.map(lambda x, y: (self.preprocess(x), y))
         metrics = MetricsHelper.get_metrics(
             ds, model=self.model, display_labels=self.display_labels)
@@ -77,9 +77,10 @@ class BaseTrainer(ABC):
 
     def _history_metrics(self, key: str, *idxs: list[int, ...]) -> list[float]:
         history = operator.itemgetter(*idxs)(self.model_train_history)
-        print(history)
+        if len(idxs) == 1:
+          history = [history]
         metrics = reduce(
-            lambda acc, x: [*acc, *x.history['key']], history, [])
+            lambda acc, x: [*acc, *x.history[key]], history, [])
         return metrics
 
     def plot_history(self, *idxs: list[int], file_path: tp.Optional[str] = None) -> plt.Figure:
@@ -95,7 +96,7 @@ class BaseTrainer(ABC):
             val_loss=val_loss
         )
 
-        (fig,) = plot.plot_graph(metrics_history)
+        (fig, *_) = plot.plot_graph(metrics_history)
         if file_path:
             fig.savefig(file_path)
         return fig

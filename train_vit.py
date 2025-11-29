@@ -107,15 +107,15 @@ class VitTrainer(BaseTrainer):
 if __name__ == "__main__":
     vit_trainer = VitTrainer(BASE_CHECKPOINT_DIR, DATASET_DIR)
     vit_trainer.prepare()
-    history = vit_trainer.run(5)
+    #history = vit_trainer.run(2)
     # plot history graph
     timestamp = time.time_ns()
-    vit_trainer.plot_history(
-        0, file_path=BASE_CHECKPOINT_DIR / f"vit_train_history-{timestamp}.jpg"
-    )
+    # vit_trainer.plot_history(
+    #     0, file_path=BASE_CHECKPOINT_DIR / f"vit_train_history-{timestamp}.jpg"
+    # )
     metrics = vit_trainer.inference()
     metrics.save_fig(BASE_CHECKPOINT_DIR /
                      f"vit_train_confusion_matrix-{timestamp}.jpg")
     data = metrics.to_series()
-    pd.to_csv(data, BASE_CHECKPOINT_DIR /
+    data.to_csv(BASE_CHECKPOINT_DIR /
               f"vit_metrics-{timestamp}.jpg")

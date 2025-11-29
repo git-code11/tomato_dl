@@ -25,7 +25,7 @@ class MetricsGroup(tp.NamedTuple):
         return pd.Series(items)
 
     def save_fig(self, img_path: str) -> tp.NoReturn:
-        fig: plt.Figure = self.getattr('confusion_matrix_figure')
+        fig: plt.Figure = self.confusion_matrix_figure
         fig.savefig(img_path)
 
 
@@ -37,32 +37,37 @@ class MetricsHelper:
                     title="Test") -> MetricsGroup:
         ds_target = []
         ds_pred = []
-
+        ds_scores = []
         for (X, y) in ds.as_numpy_iterator():
             ds_target.append(y)
             pred_scores = model(X)
             pred = tf.argmax(pred_scores, axis=-1)
             ds_pred.append(pred)
+            ds_scores.append(pred_scores)
 
         targets = tf.concat(ds_target, axis=0)
         preds = tf.concat(ds_pred, axis=0)
         preds = tf.cast(preds, tf.int32)
+        scores = tf.concat(ds_scores, axis=0)
 
         targets = targets.numpy()
         preds = preds.numpy()
+        scores = scores.numpy()
+
+        class_size = np.shape(scores)[-1]
 
         assert (np.shape(preds) == np.shape(targets), "Shape is different")
-
+        print("Shape=>", np.shape(preds), np.shape(targets))
         accuracy = accuracy_score(targets, preds)
         recall = recall_score(targets, preds, average='macro')
         precision = precision_score(targets, preds, average='macro')
         f1 = f1_score(targets, preds, average='macro')
+        _target = tf.one_hot(tf.constant(targets, dtype=tf.int32), class_size).numpy()
         avg_precision = average_precision_score(
-            ds_target, ds_pred, average="macro")
-        # _t = tf.one_hot(tf.constant(targets, dtype=tf.int32), 3).numpy()
-        # _preds = tf.one_hot(tf.constant(preds, dtype=tf.int32), 3).numpy()
+            _target, scores, average="macro")
+        
         roc_auc = roc_auc_score(
-            targets, preds, multi_class='ovr', average='macro')
+            _target, scores, multi_class='ovr', average='macro')
         # print(f"AUC: {auc}")
         # print(f"Accuracy: {accuracy}")
         # print(f"F1 Score: {f1}")
