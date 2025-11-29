@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod
 from functools import reduce
 import operator
 import pathlib
-import keras
+import jaxtyping as ttf
 import tensorflow as tf
+import keras
 import matplotlib.pyplot as plt
 from ..utils import plot
 from ..utils.metrics import MetricsHelper, MetricsGroup
@@ -40,6 +41,10 @@ class BaseTrainer(ABC):
     def load_datasets(self) -> DatasetDict:
         ...
 
+    @abstractmethod
+    def preprocess(self, data: ttf.Float[tf.Tensor, "B ..."]) -> ttf.Float[tf.Tensor, "B ..."]:
+      return data
+
     @property
     @abstractmethod
     def callbacks(self) -> list[keras.callbacks.Callback]:
@@ -51,11 +56,13 @@ class BaseTrainer(ABC):
         return None
 
     def run(self, epoch: int) -> keras.callbacks.History:
-        train_ds = self.ds.get('train_ds')
-        val_ds = self.ds.get('val_ds')
+        train_ds = self.ds.get('train_ds').take(1)
+        val_ds = self.ds.get('val_ds').take(1)
+        _train_ds = train_ds.map(lambda x, y: (self.preprocess(x), y))
+        _val_ds = val_ds.map(lambda x, y: (self.preprocess(x), y))
         callbacks = self.callbacks
-        history = self.model.fit(train_ds, epochs=15,
-                                 validation_data=val_ds,
+        history = self.model.fit(_train_ds, epochs=epoch,
+                                 validation_data=_val_ds,
                                  callbacks=callbacks)
         self.model_train_history.append(history)
         return history
@@ -63,18 +70,19 @@ class BaseTrainer(ABC):
     def inference(self, ds: OptionalDataset = None, *, kind='test_ds') -> MetricsGroup:
         if ds is None:
             ds = self.ds.get(kind)
-
+        ds = ds.map(lambda x, y: (self.preprocess(x), y))
         metrics = MetricsHelper.get_metrics(
             ds, model=self.model, display_labels=self.display_labels)
         return metrics
 
     def _history_metrics(self, key: str, *idxs: list[int, ...]) -> list[float]:
         history = operator.itemgetter(*idxs)(self.model_train_history)
+        print(history)
         metrics = reduce(
             lambda acc, x: [*acc, *x.history['key']], history, [])
         return metrics
 
-    def plot_history(self, *idxs: list[int, ...], file_path: tp.Optional[str] = None) -> plt.Figure:
+    def plot_history(self, *idxs: list[int], file_path: tp.Optional[str] = None) -> plt.Figure:
         accuracy = self._history_metrics('accuracy', *idxs)
         val_accuracy = self._history_metrics('val_accuracy', *idxs)
         loss = self._history_metrics('loss', *idxs)

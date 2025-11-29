@@ -5,6 +5,8 @@ warnings.filterwarnings('ignore')
 import time
 import pathlib
 import pandas as pd
+import jaxtyping as ttf
+import tensorflow as tf
 import keras
 from tomato_dl.utils.load_model_helper import VitConfig, load_vit
 from tomato_dl.training.base import BaseTrainer, DatasetDict
@@ -34,7 +36,7 @@ vit_config = VitConfig(
     weight_decay=1e-2,
     image_size=image_size,
     patch_size=patch_size,
-    embed_djm=embed_dim,
+    embed_dim=embed_dim,
     mlp_dim=mlp_dim,
     num_heads=num_heads,
     num_layers=num_layers,
@@ -48,10 +50,16 @@ class VitTrainer(BaseTrainer):
         super().__init__()
         self.base_dir = base_checkpoint_dir
         self.dataset_dir = dataset_dir
+        # Image Normalization Helper: Uses the Standardization formula (x - mean)/std
+        create_normalize_image = lambda mean, std: keras.layers.Lambda(lambda x: (x - mean) / std)
+        self.normalize_image = create_normalize_image(0., 255.)
 
     def load_model(self):
         # Intialize the model
         return load_vit(vit_config)
+
+    def preprocess(self, data: ttf.Float[tf.Tensor, "..."]) -> ttf.Float[tf.Tensor, "..."]:
+        return self.normalize_image(data)
 
     def load_datasets(self):
         (train_val_ds, test_ds) = keras.utils.image_dataset_from_directory(
@@ -65,9 +73,16 @@ class VitTrainer(BaseTrainer):
             batch_size=batch_size)
 
         self._display_labels = train_val_ds.class_names
+
+        # Split train_val dataset into training and validation
+        validation_size = int(train_val_ds.cardinality().numpy()*0.2)
+        val_ds = train_val_ds.take(validation_size)
+        train_ds = train_val_ds.skip(validation_size)
+
         return DatasetDict(
-            train_ds=train_val_ds,
-            test_ds=test_ds
+            train_ds=train_ds,
+            val_ds=val_ds,
+            test_ds=test_ds,
         )
 
     @property
@@ -92,15 +107,15 @@ class VitTrainer(BaseTrainer):
 if __name__ == "__main__":
     vit_trainer = VitTrainer(BASE_CHECKPOINT_DIR, DATASET_DIR)
     vit_trainer.prepare()
-    # history = vit_trainer.run(1)
-    # # plot history graph
-    # timestamp = time.time_ns()
-    # vit_trainer.plot_history(
-    #     0, file_path=BASE_CHECKPOINT_DIR / f"vit_train_history-{timestamp}.jpg"
-    # )
-    # metrics = vit_trainer.inference()
-    # metrics.save_fig(BASE_CHECKPOINT_DIR /
-    #                  f"vit_train_confusion_matrix-{timestamp}.jpg")
-    # data = metrics.to_series()
-    # pd.to_csv(data, BASE_CHECKPOINT_DIR /
-    #           f"vit_metrics-{timestamp}.jpg")
+    history = vit_trainer.run(5)
+    # plot history graph
+    timestamp = time.time_ns()
+    vit_trainer.plot_history(
+        0, file_path=BASE_CHECKPOINT_DIR / f"vit_train_history-{timestamp}.jpg"
+    )
+    metrics = vit_trainer.inference()
+    metrics.save_fig(BASE_CHECKPOINT_DIR /
+                     f"vit_train_confusion_matrix-{timestamp}.jpg")
+    data = metrics.to_series()
+    pd.to_csv(data, BASE_CHECKPOINT_DIR /
+              f"vit_metrics-{timestamp}.jpg")
