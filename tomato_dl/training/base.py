@@ -4,7 +4,6 @@ import enum
 from abc import ABC, abstractmethod
 from functools import reduce
 import operator
-import pathlib
 import jaxtyping as ttf
 import tensorflow as tf
 import keras
@@ -23,9 +22,10 @@ class DatasetDict(tp.TypedDict):
 
 
 class DataSplit(enum.Enum):
-  TRAIN = "TRAIN"
-  VALID = "VALID"
-  TEST = "TEST"
+    TRAIN = "TRAIN"
+    VALID = "VALID"
+    TEST = "TEST"
+
 
 class BaseTrainer(ABC):
     model_train_history: list[keras.callbacks.History]
@@ -49,7 +49,7 @@ class BaseTrainer(ABC):
 
     @abstractmethod
     def preprocess(self, data: ttf.Float[tf.Tensor, "B ..."]) -> ttf.Float[tf.Tensor, "B ..."]:
-      return data
+        return data
 
     @property
     @abstractmethod
@@ -73,7 +73,7 @@ class BaseTrainer(ABC):
         self.model_train_history.append(history)
         return history
 
-    def inference(self, ds: OptionalDataset = None, *, kind: DataSplit=DataSplit.TEST) -> MetricsGroup:
+    def inference(self, ds: OptionalDataset = None, *, kind: DataSplit = DataSplit.TEST) -> MetricsGroup:
         if ds is None:
             ds = self.ds.get(f"{kind.value.lower()}_ds").take(1)
         ds = ds.map(lambda x, y: (self.preprocess(x), y))
@@ -81,15 +81,27 @@ class BaseTrainer(ABC):
             ds, model=self.model, display_labels=self.display_labels, title=kind.value.upper())
         return metrics
 
+    def test_inference(self, ds: OptionalDataset = None) -> MetricsGroup:
+        return self.inference(ds, kind=DataSplit.TEST)
+
+    def train_inference(self, ds: OptionalDataset = None) -> MetricsGroup:
+        return self.inference(ds, kind=DataSplit.TRAIN)
+
+    def valid_inference(self, ds: OptionalDataset = None) -> MetricsGroup:
+        return self.inference(ds, kind=DataSplit.VALID)
+
     def _history_metrics(self, key: str, *idxs: list[int, ...]) -> list[float]:
         history = operator.itemgetter(*idxs)(self.model_train_history)
         if len(idxs) == 1:
-          history = [history]
+            history = [history]
         metrics = reduce(
             lambda acc, x: [*acc, *x.history[key]], history, [])
         return metrics
 
     def plot_history(self, *idxs: list[int], file_path: tp.Optional[str] = None) -> plt.Figure:
+        if len(idxs) == 0:
+            idxs = list(range(len(self.model_train_history)))
+
         accuracy = self._history_metrics('accuracy', *idxs)
         val_accuracy = self._history_metrics('val_accuracy', *idxs)
         loss = self._history_metrics('loss', *idxs)

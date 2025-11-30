@@ -1,0 +1,18 @@
+
+model_params:
+  image_size: [256, 256]
+  patch_size: [32, 32]
+  num_classes: 3
+  embed_dim: 256
+  num_heads: 2
+  mlp_dim: 128
+  num_layers: 4
+  dropout: 0.05
+
+training_params:
+  batch_size: 32
+  learning_rate: 1e-4
+  weight_decay: 1e-2
+  # weights:
+  # datasets:
+  epoch: 2
