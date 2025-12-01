@@ -2,6 +2,9 @@ from dataclasses import dataclass
 import typing as tp
 from keras import optimizers, losses, Input
 from ..models.vision_transformer import VisionTransformer
+from ..models.effecient import EfficientNetV2
+from ..models.inception import InceptionV3
+from ..models.xception import Xception
 
 
 @dataclass
@@ -19,8 +22,7 @@ class VitConfig:
 
 
 def load_vit(config: VitConfig,
-             weights: tp.Optional[str] = None,
-             skip_init: bool = False) -> VisionTransformer:
+             weights: tp.Optional[str] = None) -> VisionTransformer:
 
     vit_model = VisionTransformer(
         vte_config=dict(
@@ -44,9 +46,70 @@ def load_vit(config: VitConfig,
         metrics=['accuracy']
     )
 
-    if not skip_init:
-        _ = vit_model(Input(shape=(*config.image_size, 3)))
-        if weights:
-            vit_model.load_weights(weights)
+    _ = vit_model(Input(shape=(*config.image_size, 3)))
+    if weights:
+        vit_model.load_weights(weights)
 
     return vit_model
+
+
+@dataclass
+class CNNConfig:
+    learning_rate: float
+    weight_decay: float
+    image_size: tuple[int, int]
+    num_classes: int
+    dropout: int = 5e-2
+
+
+def load_efficient(config: CNNConfig,
+                   weights: tp.Optional[str] = None):
+    model = EfficientNetV2(
+        image_size=config.image_size,
+        num_classes=config.num_classes, dropout=config.dropout)
+    model.compile(
+        optimizer=optimizers.AdamW(
+            learning_rate=config.learning_rate,
+            weight_decay=config.weight_decay),
+        loss=losses.SparseCategoricalCrossentropy(
+            from_logits=False),  # since softmax is already added
+        metrics=['accuracy'])
+    if weights:
+        model.load_weights(weights)
+    return model
+
+
+def load_inception(config: CNNConfig,
+                   weights: tp.Optional[str] = None):
+    model = InceptionV3(
+        image_size=config.image_size,
+        num_classes=config.num_classes,
+        dropout=config.dropout)
+    model.compile(
+        optimizer=optimizers.AdamW(
+            learning_rate=config.learning_rate,
+            weight_decay=config.weight_decay),
+        loss=losses.SparseCategoricalCrossentropy(
+            from_logits=False),  # since softmax is already added
+        metrics=['accuracy'])
+    if weights:
+        model.load_weights(weights)
+    return model
+
+
+def load_xception(config: CNNConfig,
+                  weights: tp.Optional[str] = None):
+    model = Xception(
+        image_size=config.image_size,
+        num_classes=config.num_classes,
+    )
+    model.compile(
+        optimizer=optimizers.AdamW(
+            learning_rate=config.learning_rate,
+            weight_decay=config.weight_decay),
+        loss=losses.SparseCategoricalCrossentropy(
+            from_logits=False),  # since softmax is already added
+        metrics=['accuracy'])
+    if weights:
+        model.load_weights(weights)
+    return model

@@ -27,7 +27,7 @@ class DataSplit(enum.Enum):
     TEST = "TEST"
 
 
-class BaseTrainer(ABC):
+class AbstractTrainer(ABC):
     model_train_history: list[keras.callbacks.History]
     ds: DatasetDict
     model: keras.models.Model

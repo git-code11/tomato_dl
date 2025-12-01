@@ -1,11 +1,13 @@
-inception_model = keras.applications.inception_v3.InceptionV3(
-    include_top=True,
-    weights=None,
-    classes=num_classes,
-    pooling="avg",
-    input_shape=(*image_size, 3)
-)
-inception_model.compile(optimizer=optimizers.Adam(learning_rate=0.001),
-                        loss=losses.SparseCategoricalCrossentropy(
-                            from_logits=False),  # since softmax is already added
-                        metrics=['accuracy'])
+import keras
+
+
+def InceptionV3(image_size: tuple[int, int], num_classes: int, dropout: float) -> keras.models.Model:
+    model = keras.applications.inception_v3.InceptionV3(
+        include_top=True,
+        weights=None,
+        classes=num_classes,
+        pooling="avg",
+        input_shape=(*image_size, 3)
+    )
+
+    return model

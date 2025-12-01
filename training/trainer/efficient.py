@@ -1,5 +1,5 @@
 # Training model scripts
-from tomato_dl.utils.load_model_helper import VitConfig, load_vit
+from tomato_dl.utils.load_model_helper import CNNConfig, load_efficient
 from .common import BaseTrainer
 
 
@@ -12,16 +12,11 @@ class Trainer(BaseTrainer):
         training_params = self.config['training_params']
         weights = training_params.get('weights')
 
-        vit_config = VitConfig(
+        config = CNNConfig(
             learning_rate=training_params['learning_rate'],
             weight_decay=training_params['weight_decay'],
             image_size=tuple(config['image_size']),
-            patch_size=tuple(config['patch_size']),
-            embed_dim=config['embed_dim'],
-            mlp_dim=config['mlp_dim'],
-            num_heads=config['num_heads'],
-            num_layers=config['num_layers'],
             dropout=config['dropout'],
             num_classes=config['num_classes'],
         )
-        return load_vit(vit_config, weights)
+        return load_efficient(config, weights)

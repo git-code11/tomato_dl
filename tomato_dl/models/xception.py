@@ -1,8 +1,9 @@
+from keras import layers, Model
 
-# @title Xception
+
 class Xception:
-    def __new__(self,  num_classes=3, input_shape=(None, None, 3), include_top=False):
-        return self.create_model(input_shape, num_classes, include_top)
+    def __new__(self, image_size: tuple[int, int], num_classes: int):
+        return self.create_model(input_shape=(image_size, 3), num_classes=num_classes, include_top=True)
 
     @classmethod
     def entry_separable_block(cls, input, filters):
@@ -102,14 +103,3 @@ class Xception:
             x = cls.classifier(x, num_classes)
         model = Model(inputs=input, outputs=x, name="Xception")
         return model
-
-
-def load_xception(weight=None):
-    xmodel = Xception(include_top=True, num_classes=num_classes)
-    xmodel.compile(optimizer=optimizers.Adam(learning_rate=0.001),
-                   loss=losses.SparseCategoricalCrossentropy(
-                       from_logits=False),  # since softmax is already added
-                   metrics=['accuracy'])
-    if weight:
-        xmodel.load_weights(weight)
-    return xmodel

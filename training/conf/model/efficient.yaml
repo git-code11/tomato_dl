@@ -1,15 +1,10 @@
-name: vit
+name: efficient
 
-trainer: training.trainer.vit
+trainer: training.trainer.efficient
 
 model_params:
   image_size: [256, 256]
-  patch_size: [32, 32]
   num_classes: 3
-  embed_dim: 256
-  num_heads: 2
-  mlp_dim: 128
-  num_layers: 4
   dropout: 0.05
 
 training_params:
@@ -20,4 +15,4 @@ training_params:
   # weights:
   # datasets:
   epoch: 2
-  patience: 5
+  patience: 4
