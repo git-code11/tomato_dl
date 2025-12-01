@@ -1,0 +1,8 @@
+tensorflow
+keras
+jaxtyping
+hydra-core
+numpy
+panda
+matplotlib
+seaborn
