@@ -62,8 +62,8 @@ class AbstractTrainer(ABC):
         return None
 
     def run(self, epoch: int) -> keras.callbacks.History:
-        train_ds = self.ds.get('train_ds').take(1)
-        val_ds = self.ds.get('valid_ds').take(1)
+        train_ds = self.ds.get('train_ds')  # .take(1)
+        val_ds = self.ds.get('valid_ds')  # .take(1)
         _train_ds = train_ds.map(lambda x, y: (self.preprocess(x), y))
         _val_ds = val_ds.map(lambda x, y: (self.preprocess(x), y))
         callbacks = self.callbacks
@@ -75,7 +75,7 @@ class AbstractTrainer(ABC):
 
     def inference(self, ds: OptionalDataset = None, *, kind: DataSplit = DataSplit.TEST) -> MetricsGroup:
         if ds is None:
-            ds = self.ds.get(f"{kind.value.lower()}_ds").take(1)
+            ds = self.ds.get(f"{kind.value.lower()}_ds")  # .take(1)
         ds = ds.map(lambda x, y: (self.preprocess(x), y))
         metrics = MetricsHelper.get_metrics(
             ds, model=self.model, display_labels=self.display_labels, title=kind.value.upper())
