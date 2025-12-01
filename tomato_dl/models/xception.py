@@ -3,7 +3,7 @@ from keras import layers, Model
 
 class Xception:
     def __new__(self, image_size: tuple[int, int], num_classes: int):
-        return self.create_model(input_shape=(image_size, 3), num_classes=num_classes, include_top=True)
+        return self.create_model(input_shape=(*image_size, 3), num_classes=num_classes, include_top=True)
 
     @classmethod
     def entry_separable_block(cls, input, filters):

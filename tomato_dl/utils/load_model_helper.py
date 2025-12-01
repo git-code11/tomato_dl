@@ -193,8 +193,8 @@ def load_hybrid(config: HybridConfig, weights: tp.Optional[str] = None,):
         dropout=config.dropout,
         num_layers=config.num_layers,
         use_vit_as_key=config.use_vit_as_key,
-        cnn_extractor=cnn,
-        vit_extractor=vit
+        cnn_extractor=cnn_extractor,
+        vit_extractor=vit_extractor
     )
 
     # Compile the model

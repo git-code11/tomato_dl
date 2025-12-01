@@ -63,7 +63,7 @@ class AbstractTrainer(ABC):
 
     def run(self, epoch: int) -> keras.callbacks.History:
         train_ds = self.ds.get('train_ds').take(1)
-        val_ds = self.ds.get('val_ds').take(1)
+        val_ds = self.ds.get('valid_ds').take(1)
         _train_ds = train_ds.map(lambda x, y: (self.preprocess(x), y))
         _val_ds = val_ds.map(lambda x, y: (self.preprocess(x), y))
         callbacks = self.callbacks

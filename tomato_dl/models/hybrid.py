@@ -78,6 +78,8 @@ class HybridModel(Model):
         else:
             context = x1
             inputs = x0
+        
+       
         for layer in self.decoder_layers[:-1]:
             inputs = layer(inputs, context, training=training)
         x = self.decoder_layers[-1](inputs, context, training=training)

@@ -19,6 +19,7 @@ model_params:
     dropout: 0.05
   
   image_size: [256, 256]
+  num_classes: 3
   num_layers: 1
   dropout: 0.05
 
