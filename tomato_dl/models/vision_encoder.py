@@ -50,6 +50,6 @@ class VisionTransformerEncoder(Model):
         return output_shape
 
     def get_config(self) -> dict[str, tp.Any]:
-        config = super().config()
+        config = super().get_config()
         config.update(self.block_config)
         return config
