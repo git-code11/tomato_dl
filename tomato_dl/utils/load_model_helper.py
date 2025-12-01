@@ -185,9 +185,9 @@ def load_hybrid(config: HybridConfig, weights: tp.Optional[str] = None,):
 
     model = HybridModel(
         decoder_config=dict(
-            embed_dim=config.embed_dim,
-            num_heads=config.num_heads,
-            mlp_dim=config.mlp_dim,
+            embed_dim=config.vit.embed_dim,
+            num_heads=config.vit.num_heads,
+            mlp_dim=config.vit.mlp_dim,
         ),
         num_classes=config.num_classes,
         dropout=config.dropout,
