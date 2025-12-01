@@ -50,7 +50,7 @@ class BaseTrainer(AbstractTrainer):
 
         return DatasetDict(
             train_ds=train_ds,
-            val_ds=val_ds,
+            valid_ds=val_ds,
             test_ds=test_ds,
         )
 

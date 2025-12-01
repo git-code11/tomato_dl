@@ -1,0 +1,34 @@
+name: hybrid_xception
+
+trainer: training.trainer.hybrid
+
+model_params:
+  vit:
+    image_size: [256, 256]
+    num_classes: 3
+    dropout: 0.05
+    patch_size: [32, 32]
+    embed_dim: 256
+    num_heads: 2
+    mlp_dim: 128
+    num_layers: 4
+  cnn:
+    kind: "xception"
+    image_size: [256, 256]
+    num_classes: 3
+    dropout: 0.05
+  
+  image_size: [256, 256]
+  use_vit_as_key: True
+  # vit_weights: 
+  # cnn_weights:
+
+training_params:
+  batch_size: 32
+  seed: 57
+  learning_rate: 1e-4
+  weight_decay: 1e-2
+  # weights:
+  # datasets:
+  epoch: 2
+  patience: 4

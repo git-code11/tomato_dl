@@ -30,7 +30,7 @@ class DataSplit(enum.Enum):
 class AbstractTrainer(ABC):
     model_train_history: list[keras.callbacks.History]
     ds: DatasetDict
-    model: keras.models.Model
+    model: keras.Model
 
     def __init__(self):
         self.model_train_history = []
@@ -40,7 +40,7 @@ class AbstractTrainer(ABC):
         self.model = self.load_model()
 
     @abstractmethod
-    def load_model(self) -> keras.models.Model:
+    def load_model(self) -> keras.Model:
         ...
 
     @abstractmethod
