@@ -79,7 +79,7 @@ if __name__ == '__main__':
                         help="Dataset folder in class based arrangement")
 
     params = parser.parse_args()
-    trainer = get_trainer(*params)
+    trainer = get_trainer(*vars(params))
     trainer.prepare()
 
     evaluate_model(trainer)
