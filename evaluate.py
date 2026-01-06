@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import importlib
 import pathlib
 from omegaconf import OmegaConf, MISSING
-from tomato_dl.training.base import AbstractTrainer
+from training.trainer.common import BaseTrainer
 # import numpy as np
 import pandas as pd
 import warnings
@@ -26,33 +26,31 @@ class ModelConfig:
     training_params: dict[str, tp.Any] = MISSING
 
 
-def evaluate_model(trainer: AbstractTrainer, base_dir: os.PathLike) -> None:
+def evaluate_model(trainer: BaseTrainer) -> None:
     metrics = trainer.train_inference()
-    metrics.save_fig(base_dir /
+    metrics.save_fig(trainer.base_dir /
                      "train_confusion_matrix.jpg")
     data = metrics.to_series()
     df = pd.DataFrame(dict(train=data))
-    df.to_csv(base_dir /
+    df.to_csv(trainer.base_dir /
               "metrics.csv")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser("evaluate")
-    parser.add_argument("prefix", help="ID for the current evaluation")
-    parser.add_argument("--config", required=True, help="Model config")
-    parser.add_argument("--weights", required=True, help="Model weights")
-    parser.add_argument("--dataset", required=True,
-                        help="Dataset folder in class based arrangement")
+class GetTrainerArgs(tp.TypedDict):
+    basedir: str
+    config: str
+    weights: str
+    dataset: str
 
-    params = parser.parse_args()
 
+def get_trainer(**params: GetTrainerArgs) -> BaseTrainer:
     config_path = params['config']
     schema = OmegaConf.structured(ModelConfig)
     cfg = OmegaConf.load(config_path)
     cfg['training_params']['weights'] = params['weights']
     cfg = OmegaConf.merge(schema, cfg)
 
-    base_dir = BASE_CHECKPOINT_DIR / params['prefix']
+    base_dir = params['base_dir']
     dataset_dir = params['config']
 
     # Load Trainer class
@@ -60,8 +58,23 @@ if __name__ == '__main__':
     trainer_module = importlib.import_module(config['trainer'])
     Trainer = trainer_module.Trainer
 
-    trainer: AbstractTrainer = Trainer(
+    trainer = Trainer(
         config, base_dir, dataset_dir)
+
+    return trainer
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser("evaluate")
+    parser.add_argument("--base_dir", default=BASE_CHECKPOINT_DIR,
+                        help="ID for the current evaluation")
+    parser.add_argument("--config", required=True, help="Model config")
+    parser.add_argument("--weights", required=True, help="Model weights")
+    parser.add_argument("--dataset", required=True,
+                        help="Dataset folder in class based arrangement")
+
+    params = parser.parse_args()
+    trainer = get_trainer(*params)
     trainer.prepare()
 
-    evaluate_model(trainer, base_dir)
+    evaluate_model(trainer)
