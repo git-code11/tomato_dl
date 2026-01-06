@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 CONFIG_PATH = r"training/conf"
 CONFIG_NAME = "config"
 
-BASE_CHECKPOINT_DIR = pathlib.cwd()
+BASE_CHECKPOINT_DIR = pathlib.Path.cwd()
 
 
 @dataclass
