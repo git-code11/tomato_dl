@@ -50,7 +50,7 @@ def get_trainer(**params: GetTrainerArgs) -> BaseTrainer:
     cfg['training_params']['weights'] = params['weights']
     cfg = OmegaConf.merge(schema, cfg)
 
-    base_dir = params['base_dir']
+    base_dir = pathlib.Path(params['base_dir'])
     dataset_dir = params['config']
 
     # Load Trainer class
