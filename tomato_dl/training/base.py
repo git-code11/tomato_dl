@@ -35,8 +35,8 @@ class AbstractTrainer(ABC):
     def __init__(self):
         self.model_train_history = []
 
-    def prepare(self):
-        self.ds = self.load_datasets()
+    def prepare(self, **kwargs):
+        self.ds = self.load_datasets(**kwargs)
         self.model = self.load_model()
 
     @abstractmethod
@@ -44,7 +44,7 @@ class AbstractTrainer(ABC):
         ...
 
     @abstractmethod
-    def load_datasets(self) -> DatasetDict:
+    def load_datasets(self, *, split: bool = True) -> DatasetDict:
         ...
 
     @abstractmethod

@@ -26,20 +26,29 @@ class BaseTrainer(AbstractTrainer):
             -> ttf.Float[tf.Tensor, "..."]:
         return self.normalize_image(data)
 
-    def load_datasets(self):
+    def load_datasets(self, *, split: bool = True) \
+            -> DatasetDict:
         image_size = tuple(self.config['model_params']['image_size'])
         batch_size = self.config['training_params']['batch_size']
-        seed = self.config['training_params']['seed']
-        (train_val_ds, test_ds) = keras.utils.image_dataset_from_directory(
+        seed = self.config['training_params']['seed'] if split else None
+
+        ds = keras.utils.image_dataset_from_directory(
             self.dataset_dir,
-            shuffle=True,
+            shuffle=True if split else False,
             batch_size=batch_size,
-            validation_split=0.1,
+            validation_split=0.1 if split else None,
             label_mode='int',
-            subset="both",
+            subset="both" if split else None,
             seed=seed,
             image_size=image_size,
         )
+
+        if not split:
+            return DatasetDict(
+                train_ds=ds
+            )
+
+        (train_val_ds, test_ds) = ds
 
         self._display_labels = train_val_ds.class_names
 

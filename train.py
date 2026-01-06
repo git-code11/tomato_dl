@@ -5,19 +5,13 @@ import pathlib
 from omegaconf import DictConfig, MISSING
 import hydra
 from hydra.core.config_store import ConfigStore
-#import numpy as np
+# import numpy as np
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
 CONFIG_PATH = r"training/conf"
 CONFIG_NAME = "config"
-
-
-@dataclass
-class MySQLConfig:
-    host: str = "localhost"
-    port: int = 3306
 
 
 @dataclass
@@ -65,12 +59,12 @@ def train_model(cfg: DictConfig) -> None:
     vit_trainer = Trainer(config, BASE_CHECKPOINT_DIR, DATASET_DIR)
     vit_trainer.prepare()
 
-    #-------TEST------
-    #out = vit_trainer.model(np.random.rand(1, 256, 256, 3))
-    #print(f"{out.shape=}")
-    #return
-    #-------TEST------
-    
+    # -------TEST------
+    # out = vit_trainer.model(np.random.rand(1, 256, 256, 3))
+    # print(f"{out.shape=}")
+    # return
+    # -------TEST------
+
     vit_trainer.run(EPOCH)
 
     # plot history graph
