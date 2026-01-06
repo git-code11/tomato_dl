@@ -26,11 +26,6 @@ class ModelConfig:
     training_params: dict[str, tp.Any] = MISSING
 
 
-@dataclass
-class Config:
-    model: ModelConfig = MISSING
-
-
 def evaluate_model(trainer: BaseTrainer) -> None:
     metrics = trainer.train_inference()
     metrics.save_fig(trainer.base_dir /
@@ -50,28 +45,27 @@ class GetTrainerArgs(tp.TypedDict):
 
 def get_trainer(**params: GetTrainerArgs) -> BaseTrainer:
     config_path = params['config']
-    schema = OmegaConf.structured(Config)
-    cfg = OmegaConf.load(config_path)
+    schema = OmegaConf.structured(ModelConfig)
+    cfg = OmegaConf.load(config_path)['model']
     cfg['training_params']['weights'] = params['weights']
     cfg = OmegaConf.merge(schema, cfg)
 
-    base_dir = pathlib.Path(params['base_dir'])
-    dataset_dir = params['config']
+    base_dir = pathlib.Path(params['basedir'])
+    dataset_dir = params['dataset']
 
     # Load Trainer class
-    config = cfg['model']
-    trainer_module = importlib.import_module(config['trainer'])
+    trainer_module = importlib.import_module(cfg['trainer'])
     Trainer = trainer_module.Trainer
 
     trainer = Trainer(
-        config, base_dir, dataset_dir)
+        cfg, base_dir, dataset_dir)
 
     return trainer
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("evaluate")
-    parser.add_argument("--base_dir", default=BASE_CHECKPOINT_DIR,
+    parser.add_argument("--basedir", default=BASE_CHECKPOINT_DIR,
                         help="ID for the current evaluation")
     parser.add_argument("--config", required=True, help="Model config")
     parser.add_argument("--weights", required=True, help="Model weights")
@@ -79,7 +73,7 @@ if __name__ == '__main__':
                         help="Dataset folder in class based arrangement")
 
     params = parser.parse_args()
-    trainer = get_trainer(*vars(params))
+    trainer = get_trainer(**vars(params))
     trainer.prepare()
 
     evaluate_model(trainer)
