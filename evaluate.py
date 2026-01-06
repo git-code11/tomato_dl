@@ -26,6 +26,11 @@ class ModelConfig:
     training_params: dict[str, tp.Any] = MISSING
 
 
+@dataclass
+class Config:
+    model: ModelConfig = MISSING
+
+
 def evaluate_model(trainer: BaseTrainer) -> None:
     metrics = trainer.train_inference()
     metrics.save_fig(trainer.base_dir /
@@ -45,7 +50,7 @@ class GetTrainerArgs(tp.TypedDict):
 
 def get_trainer(**params: GetTrainerArgs) -> BaseTrainer:
     config_path = params['config']
-    schema = OmegaConf.structured(ModelConfig)
+    schema = OmegaConf.structured(Config)
     cfg = OmegaConf.load(config_path)
     cfg['training_params']['weights'] = params['weights']
     cfg = OmegaConf.merge(schema, cfg)
