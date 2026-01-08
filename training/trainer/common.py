@@ -31,12 +31,17 @@ class BaseTrainer(AbstractTrainer):
         image_size = tuple(self.config['model_params']['image_size'])
         batch_size = self.config['training_params']['batch_size']
         seed = self.config['training_params']['seed'] if split else None
+        split_ratio = self.config['training_params'].get(
+            ['split_ratio'], [0.3, 0.1])
+        if len(split_ratio) != 2:
+            raise Exception(
+                "Require len(split_ratio) == 2 (test, valid)")
 
         ds = keras.utils.image_dataset_from_directory(
             self.dataset_dir,
             shuffle=True if split else False,
             batch_size=batch_size,
-            validation_split=0.1 if split else None,
+            validation_split=split_ratio[0] if split else None,
             label_mode='int',
             subset="both" if split else None,
             seed=seed,
@@ -53,7 +58,8 @@ class BaseTrainer(AbstractTrainer):
         self._display_labels = train_val_ds.class_names
 
         # Split train_val dataset into training and validation
-        validation_size = int(train_val_ds.cardinality().numpy()*0.2)
+        validation_size = int(
+            train_val_ds.cardinality().numpy()*split_ratio[1])
         val_ds = train_val_ds.take(validation_size)
         train_ds = train_val_ds.skip(validation_size)
 
