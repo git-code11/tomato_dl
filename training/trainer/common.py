@@ -33,6 +33,7 @@ class BaseTrainer(AbstractTrainer):
         seed = self.config['training_params']['seed'] if split else None
         split_ratio = self.config['training_params'].get(
             ['split_ratio'], [0.3, 0.1])
+
         if len(split_ratio) != 2:
             raise Exception(
                 "Require len(split_ratio) == 2 (test, valid)")
@@ -49,6 +50,7 @@ class BaseTrainer(AbstractTrainer):
         )
 
         if not split:
+            self._display_labels = ds.class_names
             return DatasetDict(
                 train_ds=ds
             )
@@ -58,8 +60,8 @@ class BaseTrainer(AbstractTrainer):
         self._display_labels = train_val_ds.class_names
 
         # Split train_val dataset into training and validation
-        validation_size = int(
-            train_val_ds.cardinality().numpy()*split_ratio[1])
+        validation_size = (train_val_ds.cardinality() +
+                           test_ds.cardinality())*split_ratio[1]
         val_ds = train_val_ds.take(validation_size)
         train_ds = train_val_ds.skip(validation_size)
 
