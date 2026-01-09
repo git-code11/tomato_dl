@@ -32,7 +32,7 @@ class BaseTrainer(AbstractTrainer):
         batch_size = self.config['training_params']['batch_size']
         seed = self.config['training_params']['seed'] if split else None
         split_ratio = self.config['training_params'].get(
-            ['split_ratio'], [0.7, 0.2, 0.1])
+            'split_ratio', (0.7, 0.2, 0.1))
 
         if len(split_ratio) != 3:
             raise Exception(
