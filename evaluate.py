@@ -74,6 +74,6 @@ if __name__ == '__main__':
 
     params = parser.parse_args()
     trainer = get_trainer(**vars(params))
-    trainer.prepare()
+    trainer.prepare(split=False)
 
     evaluate_model(trainer)
