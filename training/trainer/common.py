@@ -66,9 +66,10 @@ class BaseTrainer(AbstractTrainer):
         # Split train_val dataset into training and validation
         validation_size = (train_val_ds.cardinality() +
                            test_ds.cardinality()).numpy()*split_ratio[1]
-        print(f"Validation = {validation_size}")
         val_ds = train_val_ds.take(validation_size)
         train_ds = train_val_ds.skip(validation_size)
+        print(f"Train = {train_ds.cardinality()} Valid = {
+              val_ds.cardinality()} Test_ds = {test_ds.cardinality()}")
 
         return DatasetDict(
             train_ds=train_ds,
