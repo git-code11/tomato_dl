@@ -32,17 +32,21 @@ class BaseTrainer(AbstractTrainer):
         batch_size = self.config['training_params']['batch_size']
         seed = self.config['training_params']['seed'] if split else None
         split_ratio = self.config['training_params'].get(
-            ['split_ratio'], [0.3, 0.1])
+            ['split_ratio'], [0.7, 0.2, 0.1])
 
-        if len(split_ratio) != 2:
+        if len(split_ratio) != 3:
             raise Exception(
-                "Require len(split_ratio) == 2 (test, valid)")
+                "Require len(split_ratio) == 2 (train, valid, test)")
+
+        if not (all([x > 0 for x in split_ratio]) and sum(split_ratio) == 1):
+            raise Exception(
+                "Check split paramaters: Enure non-zero and sum to be 1")
 
         ds = keras.utils.image_dataset_from_directory(
             self.dataset_dir,
             shuffle=True if split else False,
             batch_size=batch_size,
-            validation_split=split_ratio[0] if split else None,
+            validation_split=split_ratio[2] if split else None,
             label_mode='int',
             subset="both" if split else None,
             seed=seed,
