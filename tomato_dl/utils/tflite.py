@@ -39,10 +39,10 @@ class TfliteInference:
             output_detail['index']), self._output_details))
         labelled = None
         outputs = outputs[0][0].tolist()
-        print(f"{outputs}")
+        # print(f"{outputs}")
         if self.labels:
             labelled = dict(zip(self.labels, outputs))
-        print(f"{labelled}")
+        # print(f"{labelled}")
         result = InferenceResult(
             outputs=outputs, elapsed_time=elapsed_time, labelled=labelled)
         return result

@@ -2,6 +2,9 @@ ai-edge-litert
 httpx
 jaxtyping
 gradio
+gradio_client
+fastapi
+uvicorn
 langchain
 langchain-google-genai
 langgraph-core

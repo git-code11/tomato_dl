@@ -1,14 +1,13 @@
 import os
 from pathlib import Path
-import json
 import gradio as gr
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tomato_dl.utils.tflite import TfliteInference
-from lib.document import CropDataLoader
 from langchain_core.runnables import RunnableLambda
 from lib.agent import TomatoExpertAgent
+from fastapi import FastAPI
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -76,6 +75,8 @@ async def callback_chatbot(message: gr.ChatMessage, history: list[gr.ChatMessage
 
 
 def callback_predict(image: np.ndarray, state: str):
+    if image is None:
+        return "Provide image input", ""
     resized_image = tf.image.resize(
         image, (256, 256), method=tf.image.ResizeMethod.BILINEAR)
     result = model.inference([np.expand_dims(resized_image, 0)])
@@ -120,9 +121,15 @@ chat_block = gr.ChatInterface(
 inference_block = gr.Interface(
     callback_predict, [image_input2, state], [label_output, state])
 
-app = gr.TabbedInterface(
+block = gr.TabbedInterface(
     [chat_block, inference_block],
     ["Chat", "Inference"],
     title="Tomato Assistant AI",
 )
-app.launch(debug=True)
+
+
+app = FastAPI()
+app = gr.mount_gradio_app(app, block, path="/")
+
+if __name__ == "__main__":
+    block.launch(debug=True)
