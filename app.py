@@ -39,7 +39,7 @@ async def callback_chatbot(message: gr.ChatMessage, history: list[gr.ChatMessage
     for fname in message['files']:
         images.append(plt.imread(fname))
 
-    images = image if image is None else [*images, image]
+    images = images if image is None else [*images, image]
 
     # perform image classification here
     if len(images) > 0:
