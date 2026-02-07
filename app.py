@@ -132,4 +132,4 @@ app = FastAPI()
 app = gr.mount_gradio_app(app, block, path="/")
 
 if __name__ == "__main__":
-    block.launch(debug=True)
+    block.launch(debug=True, share=True, )
