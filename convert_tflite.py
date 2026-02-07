@@ -16,8 +16,8 @@ if __name__ == '__main__':
     parser.add_argument("--weights", required=True, help="Model weights")
     parser.add_argument("--output", required=True, help="Tflite Name")
 
-    params = parser.parse_args()
-    trainer = get_trainer(**vars(params), dataset="")
+    params = vars(parser.parse_args())
+    trainer = get_trainer(params, dataset="")
 
     model = trainer.load_model()
 
