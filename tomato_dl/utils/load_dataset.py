@@ -21,7 +21,8 @@ def load_dataset(dataset_dir: os.PathLike,
         raise Exception(
             "Check split paramaters: Enure non-zero and sum to be 1")
 
-    classes = tf.io.gfile.listdir(dataset_dir).sort()
+    classes = tf.io.gfile.listdir(dataset_dir)
+    classes.sort()
 
     fnames = {x: list(map(
         lambda fname: tf.io.gfile.join(x, fname),
