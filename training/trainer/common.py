@@ -5,6 +5,7 @@ import jaxtyping as ttf
 import tensorflow as tf
 import keras
 from tomato_dl.training.base import AbstractTrainer, DatasetDict
+from tomato_dl.utils.load_dataset import load_datasets as qload_datasets
 
 
 class BaseTrainer(AbstractTrainer):
@@ -29,7 +30,7 @@ class BaseTrainer(AbstractTrainer):
     def load_datasets(self, *, split: bool = True) \
             -> DatasetDict:
         image_size = tuple(self.config['model_params']['image_size'])
-        batch_size = self.config['training_params']['batch_size']
+        batch_size = self.config['training_params'].get('batch_size', 32)
         seed = self.config['training_params']['seed'] if split else None
         split_ratio = self.config['training_params'].get(
             'split_ratio', (0.7, 0.15, 0.15))
@@ -42,32 +43,32 @@ class BaseTrainer(AbstractTrainer):
             raise Exception(
                 "Check split paramaters: Enure non-zero and sum to be 1")
 
-        ds = keras.utils.image_dataset_from_directory(
-            self.dataset_dir,
-            shuffle=True if split else False,
-            batch_size=batch_size,
-            validation_split=split_ratio[2] if split else None,
-            label_mode='int',
-            subset="both" if split else None,
-            seed=seed,
-            image_size=image_size,
-        )
-
         if not split:
+            ds = keras.utils.image_dataset_from_directory(
+                self.dataset_dir,
+                shuffle=True if split else False,
+                batch_size=batch_size,
+                validation_split=split_ratio[2] if split else None,
+                label_mode='int',
+                subset="both" if split else None,
+                seed=seed,
+                image_size=image_size,
+            )
+
             self._display_labels = ds.class_names
             return DatasetDict(
                 train_ds=ds
             )
 
-        (train_val_ds, test_ds) = ds
+        (train_ds, val_ds, test_ds) = qload_datasets(self.dataset_dir,
+                                                     image_size=image_size,
+                                                     seed=seed,
+                                                     batch_size=batch_size,
+                                                     split_ratio=split_ratio)
 
-        self._display_labels = train_val_ds.class_names
+        self._display_labels = train_ds.class_names
 
         # Split train_val dataset into training and validation
-        validation_size = (train_val_ds.cardinality() +
-                           test_ds.cardinality()).numpy()*split_ratio[1]
-        val_ds = train_val_ds.take(validation_size)
-        train_ds = train_val_ds.skip(validation_size)
         print(f"Train = {train_ds.cardinality()} Valid = {
               val_ds.cardinality()} Test_ds = {test_ds.cardinality()}")
 
