@@ -5,7 +5,7 @@ import jaxtyping as ttf
 import tensorflow as tf
 import keras
 from tomato_dl.training.base import AbstractTrainer, DatasetDict
-from tomato_dl.utils.load_dataset import load_datasets as qload_datasets
+from tomato_dl.utils.load_dataset import load_dataset as qload_dataset
 
 
 class BaseTrainer(AbstractTrainer):
@@ -60,11 +60,11 @@ class BaseTrainer(AbstractTrainer):
                 train_ds=ds
             )
 
-        (train_ds, val_ds, test_ds) = qload_datasets(self.dataset_dir,
-                                                     image_size=image_size,
-                                                     seed=seed,
-                                                     batch_size=batch_size,
-                                                     split_ratio=split_ratio)
+        (train_ds, val_ds, test_ds) = qload_dataset(self.dataset_dir,
+                                                    image_size=image_size,
+                                                    seed=seed,
+                                                    batch_size=batch_size,
+                                                    split_ratio=split_ratio)
 
         self._display_labels = train_ds.class_names
 
