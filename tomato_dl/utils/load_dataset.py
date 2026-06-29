@@ -25,7 +25,7 @@ def load_dataset(dataset_dir: os.PathLike,
     classes.sort()
 
     fnames = {x: list(map(
-        lambda fname: tf.io.gfile.join(x, fname),
+        lambda fname: tf.io.gfile.join(dataset_dir, x, fname),
                       tf.io.gfile.glob(tf.io.gfile.join(x, '*.jpg'))))
               for x in classes}
 
