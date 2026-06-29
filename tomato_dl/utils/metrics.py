@@ -62,10 +62,10 @@ class MetricsHelper:
         recall = recall_score(targets, preds, average='macro')
         precision = precision_score(targets, preds, average='macro')
         f1 = f1_score(targets, preds, average='macro')
-        _target = tf.one_hot(tf.constant(targets, dtype=tf.int32), class_size).numpy()
-        avg_precision = average_precision_score(
-            _target, scores, average="macro")
-        
+        _target = tf.one_hot(tf.constant(
+            targets, dtype=tf.int32), class_size).numpy()
+        # avg_precision = average_precision_score(
+        #     _target, scores, average="macro")
         roc_auc = roc_auc_score(
             _target, scores, multi_class='ovr', average='macro')
         # print(f"AUC: {auc}")
@@ -88,7 +88,7 @@ class MetricsHelper:
             precision=precision,
             roc_auc=roc_auc,
             f1=f1,
-            average_precision=avg_precision,
+            # average_precision=avg_precision,
             confusion_matrix_figure=dp.figure_
         )
 
