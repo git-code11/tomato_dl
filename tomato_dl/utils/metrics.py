@@ -54,20 +54,20 @@ class MetricsHelper:
         preds = preds.numpy()
         scores = scores.numpy()
 
-        class_size = np.shape(scores)[-1]
+        # class_size = np.shape(scores)[-1]
 
-        assert (np.shape(preds) == np.shape(targets), "Shape is different")
+        assert np.shape(preds)[0] == np.shape(targets)[0], "Shape is different"
 
         accuracy = accuracy_score(targets, preds)
         recall = recall_score(targets, preds, average='macro')
         precision = precision_score(targets, preds, average='macro')
         f1 = f1_score(targets, preds, average='macro')
-        _target = tf.one_hot(tf.constant(
-            targets, dtype=tf.int32), class_size).numpy()
+        # _target = tf.one_hot(tf.constant(
+        #     targets, dtype=tf.int32), class_size).numpy()
         avg_precision = average_precision_score(
-            _target, scores, average="macro")
+            targets, scores, average="macro")
         roc_auc = roc_auc_score(
-            _target, scores, multi_class='ovr', average='macro')
+            targets, scores, multi_class='ovr', average='macro')
         # print(f"AUC: {auc}")
         # print(f"Accuracy: {accuracy}")
         # print(f"F1 Score: {f1}")
