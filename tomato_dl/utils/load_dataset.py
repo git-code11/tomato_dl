@@ -24,10 +24,13 @@ def load_dataset(dataset_dir: os.PathLike,
     classes = tf.io.gfile.listdir(dataset_dir)
     classes.sort()
 
-    fnames = {x: list(map(
-        lambda fname: tf.io.gfile.join(dataset_dir, x, fname),
-                      tf.io.gfile.glob(tf.io.gfile.join(x, '*.jpg'))))
-              for x in classes}
+    def glob_dir(_cls):
+        _dir = tf.io.gfile.join(dataset_dir, _cls)
+        _fnames = tf.io.gfile.glob(tf.io.gfile.join(_dir, '*.jpg'))
+        _fnames = map(lambda x: tf.io.gfile.join(_dir, x), _fnames)
+        return list(_fnames)
+
+    fnames = {x: glob_dir(x) for x in classes}
 
     print("Found ", end="")
     print(*[f"{x} = {len(fnames[x])}" for x in classes], sep=", ")
