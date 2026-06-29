@@ -25,6 +25,7 @@ class ModelConfig:
 @dataclass
 class Config:
     model: ModelConfig = MISSING
+    skip_training: bool = False
 
 
 cs = ConfigStore.instance()
@@ -37,6 +38,7 @@ cs.store(name=CONFIG_NAME, node=Config)
     config_name=CONFIG_NAME)
 def train_model(cfg: DictConfig) -> None:
     config = cfg['model']
+    skip_training = cfg['skip_training']
 
     BASE_DIR = pathlib.Path.cwd()
     BASE_CHECKPOINT_DIR = pathlib.Path(
@@ -65,11 +67,14 @@ def train_model(cfg: DictConfig) -> None:
     # return
     # -------TEST------
 
-    vit_trainer.run(EPOCH)
+    if skip_training:
+        print("[WARNING]: Skipping Model Training")
+    else:
+        vit_trainer.run(EPOCH)
+        # plot history graph
+        vit_trainer.plot_history(
+            file_path=BASE_CHECKPOINT_DIR / "train_history.jpg")
 
-    # plot history graph
-    vit_trainer.plot_history(
-        file_path=BASE_CHECKPOINT_DIR / "train_history.jpg")
     all_metrics = dict()
     metrics = vit_trainer.test_inference()
     metrics.save_fig(BASE_CHECKPOINT_DIR /
