@@ -79,7 +79,6 @@ def load_dataset(dataset_dir: os.PathLike,
         img = tf.io.read_file(img_path)
         img = tf.image.decode_jpeg(img, channels=3)
         img = tf.image.resize(img, image_size)
-        tf.print(f"shape of IMG = {img.shape}")
         return img
 
     def make_dataset(idxs: list[int]):
