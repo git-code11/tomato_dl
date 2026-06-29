@@ -66,6 +66,8 @@ class AbstractTrainer(ABC):
         val_ds = self.ds.get('valid_ds')  # .take(1)
         _train_ds = train_ds.map(lambda x, y: (self.preprocess(x), y))
         _val_ds = val_ds.map(lambda x, y: (self.preprocess(x), y))
+        #_train_ds = _train_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
+        #_val_ds = _val_ds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
         callbacks = self.callbacks
         history = self.model.fit(_train_ds, epochs=epoch,
                                  validation_data=_val_ds,
