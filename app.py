@@ -26,7 +26,10 @@ model = TfliteInference("hybrid.tflite", LABELS)
 model.load_model()
 
 
-async def callback_chatbot(message: gr.ChatMessage, history: list[gr.ChatMessage], image: np.ndarray, request: gr.Request):
+async def callback_chatbot(message: gr.ChatMessage,
+                           history: list[gr.ChatMessage],
+                           image: np.ndarray,
+                           request: gr.Request):
     user_thread_id = request.session_hash
     runnable_cfg = {"configurable": {"thread_id": user_thread_id}}
 
@@ -43,14 +46,15 @@ async def callback_chatbot(message: gr.ChatMessage, history: list[gr.ChatMessage
 
     # perform image classification here
     if len(images) > 0:
-        input_text += "this are the result of inference of the current tomato growth stage based on various section of the farm"
+        input_text += "this are the result of inference of the current \
+        tomato growth stage based on various section of the farm"
 
     for i, image in enumerate(images, start=1):
         resized_image = tf.image.resize(
             image, (256, 256), method=tf.image.ResizeMethod.BILINEAR)
         result = model.inference([np.expand_dims(resized_image, 0)])
         # merge the data
-        input_text += f"\nsection-1: "
+        input_text += "\nsection-1: "
         input_text += str.join(", ", map(lambda entry: f"{entry[0]}: {
                                entry[1]:.6f}", result['labelled'].items()))
 
@@ -68,6 +72,8 @@ async def callback_chatbot(message: gr.ChatMessage, history: list[gr.ChatMessage
             content=output_text,
             role="assistant"
         )
+
+    output_text += "\n\n"
     history.append(gr.ChatMessage(
         content=output_text,
         role="assistant"
@@ -79,6 +85,7 @@ def callback_predict(image: np.ndarray, state: str):
         return "Provide image input", ""
     resized_image = tf.image.resize(
         image, (256, 256), method=tf.image.ResizeMethod.BILINEAR)
+    resized_image = resized_image / 255.
     result = model.inference([np.expand_dims(resized_image, 0)])
 
     output_text = "Inference Result on image:\n"

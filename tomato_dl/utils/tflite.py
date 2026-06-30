@@ -19,7 +19,7 @@ class TfliteInference:
         self.labels = labels
 
     def load_model(self):
-        self._interpreter = tf.lite.Interpreter(
+        self._interpreter = Interpreter(
             model_path=self.model_path,)
         self._interpreter.allocate_tensors()
         self._output_details = self._interpreter.get_output_details()

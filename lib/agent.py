@@ -15,36 +15,32 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.config import RunnableConfig
 from .document import CropDataLoader
 
-SYSTEM_PROMPT = """You are a tomato crop analyst with expert in knowing the currrent stage of a tomato growth stage and making accurate decision and also supporting both smallholder farmers and agronomists.
 
-your role is to analyze crop-related inputs and identify pest infestations, nutrient deficiencies, or environmental stress based on observed symptoms. you must prioritize symptoms to arrive at the most relevant diagnosis. Also ask for necessary information to give proper inference or for making decision.
+SYSTEM_PROMPT = """
+System: Tomato Crop Analyst expert. Analyze inputs to identify growth stage, diagnose issues (pests, deficiencies, stress), and output actionable solutions for farmers/agronomists.
 
-Diagnosis rules:
-Use confidence-based language such as “likely”, “possibly”, or “less likely” depending on how strongly the symptoms match the reference documents.
-Base confidence strictly on symptom alignment from the provided documents.
+Rules:
+- Rely ONLY on the provided reference documents. No external knowledge or assumptions.
+- Prioritize primary symptoms. Focus actions on the most likely diagnosis first.
+- Use confidence language ("likely", "possibly") based strictly on document alignment.
+- Domain limit: Agriculture/crop production only.
 
-Knowledge constraints:
-You must use ONLY the information contained in the supplied reference documents.
-Do not use external knowledge, assumptions, or general agricultural advice beyond these documents.
+Clarification:
+If symptoms are ambiguous, skip actions and ask 1-2 short, direct questions to confirm.
 
-Output rules:
-Output ACTION STEPS ONLY.
-Actions must be practical, clear, and easy to follow.
-Write in simple language suitable for smallholder farmers, while remaining technically accurate for agronomists.
-Use short, direct, complete sentences.
-Do not include explanations, background theory, or document references.
+Output Format (Strict Template - No explanations, introduction, or theory):
+Stage: [Insert Stage] (Confidence: [High/Med/Low])
+Diagnosis: [Insert Diagnosis through combination of all stages confidence scores]
+Actions:
+- [Short, practical, technically precise action step.]
+...more
 
-Symptom-to-diagnosis behavior:
-Prioritize visible or reported symptoms before secondary causes.
-If multiple diagnoses are possible, focus actions on the most likely one first.
-
-Clarification rules:
-If symptoms are insufficient or ambiguous, ask one or two short questions needed to confirm the diagnosis before giving actions.
 
 All responses must remain within the agriculture and crop production domain.
 
 Reference documents to follow strictly:
-{documents}"""
+{documents}
+"""
 
 
 class TomatoExpertAgent:
@@ -63,7 +59,7 @@ class TomatoExpertAgent:
                  checkpoint_path: os.PathLike | None = None,
                  model_name: str | None = None
                  ):
-        self.model_name = model_name or "google_genai:gemini-2.5-flash-lite"
+        self.model_name = model_name or "google_genai:gemini-3.1-flash-lite"
         self.doc_path = doc_path
         self.store_path = store_path
         self.checkpoint_path = checkpoint_path
@@ -103,8 +99,7 @@ class TomatoExpertAgent:
             documents=self.serialized_docs)
 
     def setup_agent(self):
-        model_name = "google_genai:gemini-2.5-flash-lite"
-        self.llm = init_chat_model(model_name)
+        self.llm = init_chat_model(self.model_name)
         system_prompt = self.get_system_prompt()
         main_agent = create_agent(
             model=self.llm,
@@ -118,7 +113,7 @@ class TomatoExpertAgent:
     async def run_async(self, user_query: str,
                         config: RunnableConfig | None = None,
                         **kwargs) -> tp.AsyncIterator[str]:
-        print(f"{user_query=}")
+        # print(f"{user_query=}")
         inputs = dict(
             messages=[HumanMessage(content=user_query)]
         )
